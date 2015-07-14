@@ -126,7 +126,7 @@ tweets
                     <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 800px; height: 70px; left: 79px; top: 420px;">
                         <div class="sl-block-content fragment" style="z-index: 16; font-size: 160%;" data-highlight-theme="github-gist" data-fragment-index="4">
                             <pre class="javascript">
-                                <code>    .filter(t =&gt; hasTag(selectedHTag) )</code></pre>
+                                <code>    .filter(t =&gt; hasTag(selectedHTag, t.text) )</code></pre>
                         </div>
                     </div>
                     <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 800px; height: 147px; left: 79px; top: 483px;">
@@ -163,7 +163,7 @@ tweets
                             <pre class="javascript">
                                 <code>tweets
   .filter(t =&gt; t.username === me.username)
-  .filter(t =&gt; t.text.split(' ').includes(selectedHTag))
+  .filter(t =&gt; hasTag(selectedHTag, t.text))
   .map(t =&gt; {
     t.text = emogize(t.text);
     return t;
@@ -613,7 +613,7 @@ tweets
                             <h2>Using RxJS for Async Code</h2>
                         </div>
                     </div>
-                    <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 824px; height: 503px; left: 80px; top: 166px;">
+                    <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 824px; height: 370px; left: 80px; top: 166px;">
                         <div class="sl-block-content fragment" style="z-index: 12; font-size: 160%;" data-highlight-theme="github-gist" data-fragment-index="0">
                             <pre class="javascript">
                                 <code>var tweets_ = Rx.Observable.fromPromise(getTweets);
@@ -625,16 +625,13 @@ tweets_
     t.text = emogize(t.text);
     return t;
   })
-  .subsribe(
-    x =&gt; render(x),
-    e =&gt; renderError(e)
-  );
+  .subsribe(x =&gt; render(x));
 </code></pre>
                         </div>
                     </div>
                 </section>
                 <section class="has-dark-background" data-background-color="#222222" data-background-size="contain">
-                    <div class="sl-block" data-block-type="code" style="width: 480px; height: 560px; left: 480px; top: 140px;">
+                    <div class="sl-block" data-block-type="code" style="width: 500px; height: 560px; left: 480px; top: 140px;">
                         <div class="sl-block-content fragment" style="z-index: 10; font-size: 133%;" data-highlight-theme="github-gist" data-fragment-index="0">
                             <pre class="javascript">
                                 <code>var tweets_ =

@@ -26,16 +26,150 @@ var tweets = [{
 #+end_src
 Quite fare assumption
 # slide
-Being an awesome developer, Coyote has drafted out his specs quite clearly. His tasks involve:
+Being an awesome developer, Coyote has drafted out his specs very clearly. According to him, his sub-tasts are:
 # slide
-- only show the tweets from a selected user
+- only show the tweets from the logged-in user
 # slide
 - only show the tweets with a specific hash-tag
 # slide
-- and to replace the text emogies with image emogies. Emogies are those little smilies kids put all over their texts.
+- and replace the text emogies with image emogies. Emogies are those little smilies kids put all over their texts.
 # slide
+
 So he start with the code, one problem at a time
 # slide
-- he gets this tweets from the source, and for his first task he uses filter. Note here we're using ES6 fat-arrow syntax. It's same thing as creating an anonymous function; when we don't use braces, it returns the single statement that we pass it.
+#+begin_src javascript
+var tweets = getTweets();
+tweets
+    .filter(t => t.username === me.username)
+#+end_src
+- He gets his tweets from the source, and for his first task he uses filter. Filter is a nice "Array extra" method on ES5 arrays, which takes a function, run it on each item of the array, and create a new array with those items for which the given function returns true.
+  Note here we're using ES6 fat-arrow syntax. It's same thing as creating an anonymous function; when we don't use braces, it returns the single statement that we pass it.
+  so
+  #+begin_src javascript
+  x => x * 2;
+  #+end_src
+  is same as:
+  #+begin_src javascript
+  function(x) { return x * 2; }
+  #+end_src
+  Now he need to traverse the tweets again, to keep only those tweets which has the selected hash-tag. You guessed it, another filter. This time his fitler uses an even higher order function.
+   # slide
+  #+begin_src javascript
+  .filter(t => hasTag(selectedHTag, t.text) )
+  #+end_src
+- Now for next task, he need to manipulate each tweet, and replace the text emogies in it's text with <img> tags. For that he uses another *array extra* method, map.
+  #+begin_src javascript
+  .map(t => {
+        t.text = emogize(t.text);
+        return t;
+    })
+  #+end_src
+  Map is similar to filter in that it takes a function, apply that function to each item of the array, and returns a new array of the processed values.
+- For the last nail in the coffin, he uses `forEach` to traverse each item in his processed collection of tweets, and render each tweet.
+  #+begin_src javascript
+  .forEach(t => render);
+  #+end_src
+
+Coyote is too proud now, and rightfully so. His code looks fabulous.
+#+begin_src javascript
+tweets
+  .filter(t => t.username === me.username)
+  .filter(t => t.text.split(' ').includes(selectedHTag))
+  .map(t => {
+    t.text = emogize(t.text);
+    return t;
+  })
+  .forEach(t => render);
+#+end_src
 # slide
--
+His code has no dangling state around.
+# slide
+It's composed of small independent units of logic, and is still composable.
+# slide
+And best of all, his code is not mutating the source data. In map, he manipulates the tweets but without risking any modification of the source `tweets` variable.
+
+# slide
+The system Coyote has built works somewhat like this.
+#+CAPTION: Pure function model
+[[http://i.imgur.com/1wMthve.png]]
+The data source is made to go through an operation, and the result is passed to a sink for side-effects or storage. The Operations in this case is special that it won't mutate the source, and it doesn't depend on any external state. Given same input, it will always produce same output. In other words it is a pure function. Beauty of pure functions is that they can be composed to make complex operations without any hassle. Notice each operation Coyote used is a pure function.
+# slide
+This functional approach bring a lot of value to the code.
+# slide
+First very important thing it do is that it make the code very readable. Just laying your eyes on the code explains everything it is doing. Reason being, you can absorb it in chunks. No two operations depend on each other, there's no state to keep in mind.
+# slide
+Lesser cognitive load means more maintainable code. You won't be afraid to touch this code in future if you need to. There is lot less chance of breaking something with changing one part of your code.
+# slide
+Pure functions are super easy to test. The easiest to test I would say.
+# slide
+Modular compos-able code means more ease of extension. Want to introduce new behavior? Just drop in new operation. For example, Coyote's code render each tweet one at a time. A better approach would be to combine all the tweets and render them all at once. Doing that is just a matter of introducing a `reduce` before render `forEach`.
+# slide
+Using purer functions this way encourage reusability. For example the `hasTag` and `emogize` in Coyote's case. Doing things the functional way induces DRY code.
+
+But, this is Javascript.
+# slide
+The reality bumps in and it is not pretty. Turns out the source is asynchronous, and it produces one tweet at a time. Coyote's heart sunk when his project manager shows up with the eventual *surprise*.
+Asynchronous code in Javascript. Hmmm. Sounds familiar? I wonder what options Coyote had.
+# slide
+First thing that came in his mind was *callbacks*. Now callbacks are cute.
+# slide
+So cute /cringe/
+# slide
+Here, little eye bleach if your eyes are bleeding already.
+# slide
+- Problems with callbacks are real though. First thing that come to mind is composability. How would he compose callbacks? Remember how Coyote used small operations to accomplish the greater good? Good luck doing that with callbacks.
+- Dangling state can be nasty, very nasty with callbacks. Imagine yourself 6 level deep in callbacks. 5th callback uses something set by 2nd callback. Now debug.
+- Readability is the first thing to get murdered. I can feel you QA people.
+- Dangling state, hard to read, I think it explains the rest.
+
+Or he can use Promise.
+# slide
+The slayer of callbacks and savior of peasants.
+Now promises are awesome. Callbacks treated async as bastard child of Javascript for ages, thanks to promises async values can be passed around like regular data.
+But Promises are not free of all evil. For one, they are hard to compose. They resolve once at most and then be done with it, and canceling a promise in a pool of asynchronous requests is not the something you'd do on a sunny weekend.
+What Coyote had in mind was something that would provide brevity of functional programming along with all the awesomeness we saw with the synchronous version.
+# slide
+So may be it's time to make a compromise?
+# slide
+Coyote lived a life of no compromise. He won't compromise, not even in face of callbacks.
+Frustrated by his helplessness, Coyote stood straight and jumped out of his window, on 10th floor.
+Right before the wall, windows reminded Coyote another awesome product from his favorite awesome company which always gave him awful products.
+# slide
+No not Acme.
+# slide
+# slide
+Microsoft has this awesome project called RxJS.
+# slide
+RxJS brings C#'s reactive extensions to Javascript, and quite beautifully too.
+# slide
+# slide
+Great thing is, Rx has alternatives for many different programming languages. Learn once implement everywhere is the trend, right?
+
+But it was too late for Coyote. Poor Coyote. He was a nice...umm...guy?
+
+Never mind. It's not late for us though. Let's use RxJS to fulfill Coyote's falling wish.
+# slide
+How would the code look if we write it using RxJS?
+# slide
+#+begin_src javascript
+var tweets_ = Rx.Observable.fromPromise(getTweets);
+
+tweets_
+  .filter(t => t.username === me.username)
+  .filter(t => hasTag(selectedTag) )
+  .map(t => {
+    t.text = emogize(t.text);
+    return t;
+  })
+  .subsribe(x => render(x));
+#+end_src
+
+Umm...shit. Have I copied the same synchronous code here as well? I think I made a mistake.
+What if I haven't? What if Observable is a magical unicorn that allow you to use map/filter and other Array extras on asynchronous values?
+haha...day dreams.
+# slide
+Let's take a look at the code again. Here's the synchronous version, when we had an array.
+# slide
+And the code which might be true.
+
+Turns out, it is no mistake. It is 100% working code. Observable *is* the unicorn that could have saved Coyote another painful fall.
