@@ -1,0 +1,41 @@
+* Functional Reactive Programming with RxJS
+This is a reveal.js presentation. I created the presentation at slides.com, and then imported it to reveal.js for inserting my example scripts inside the presentation (slides.com won't allow that). To check it out locally, just open the index.html file.
+
+What follows below is the transcript of the presentation.
+
+* Intro
+For new few minutes we'll discuss Functional Reactive Programming inspired development in Javascript. We'll discus how FRP can help us write asynchronous code much more declaratively, how it improves the quality of our code in general etc. We won't talk about the "reactive" aspect that much, to keep things simpler and to keep the lime-light on code-quality and asynchronous aspects of code.
+But before we start digging into FRP, I wanna say few words of in loving memory of my friend Coyote.
+* A story of Coyote
+Coyote was a software developer,
+# slide
+always chasing javascript like all of us. He never could though, like most of us.
+# slide
+One day, he was a given a very simple task. To "Render tweets to a web page". "Can't be a task simpler than this", he said. To start with the solution, he made a small assumption. He assumed that he has an array of 100 or so tweets, and a tweet looks like this:
+# slide
+#+begin_src javascript
+var tweets = [{
+  id: 'tweet1',
+  username: 'koyote',
+  body: 'I will finally catch you :3'
+}
+.
+.
+.
+(100 or so)];
+#+end_src
+Quite fare assumption
+# slide
+Being an awesome developer, Coyote has drafted out his specs quite clearly. His tasks involve:
+# slide
+- only show the tweets from a selected user
+# slide
+- only show the tweets with a specific hash-tag
+# slide
+- and to replace the text emogies with image emogies. Emogies are those little smilies kids put all over their texts.
+# slide
+So he start with the code, one problem at a time
+# slide
+- he gets this tweets from the source, and for his first task he uses filter. Note here we're using ES6 fat-arrow syntax. It's same thing as creating an anonymous function; when we don't use braces, it returns the single statement that we pass it.
+# slide
+-
