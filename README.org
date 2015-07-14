@@ -173,3 +173,158 @@ Let's take a look at the code again. Here's the synchronous version, when we had
 And the code which might be true.
 
 Turns out, it is no mistake. It is 100% working code. Observable *is* the unicorn that could have saved Coyote another painful fall.
+
+# slide
+* Observable
+Say hello to the unicorn in the room.
+Observable is one of many ways of representing asynchronous values in Javascript, two of which we checked earlier.
+It is a lot like a Promise, but acts more like a collection of asynchronous values.
+# slide
+They are the building blocks of FRP inspired programming using RxJS. Almost everything is an Observable, or a derivative of it.
+# slide
+They are first class async values, like a promise is.
+# slide
+Plus, they have a large number of functional operators that allow composing operations the same way as we did with arrays.
+# slide
+And they play well with other form of data that you might have. We'll see how later.
+Before we dive into Observables, let me answer first why you should care. I mean of course Observables are awesome and you should be using them, but so are pure functions, but how many really care?
+# slide
+- Observables are proposed to be made first-class citizens in ES7. I have my fingers crossed till the day I heard it. It'll be so much awesome to code in Javascript when this happens.
+- Angular 2 gets away from its infamous digest loop by using Observables for change detection. So yea, you can expect first class support for them in Angular 2.
+- And the new hot thing (react) has plans to support Observables first class. Or so I've heard.
+# slide
+Alright then, let's address the elephant in the room. Or was it unicorn? Elephant sized unicorn perhaps.
+You can think of an Observable, as an array spanned over time. It gets its values in future, and may or may not finish.
+Let's see a comparison with usual Javascript stuff and Observables.
+# slide
+Programming for a large part is about manipulation of data. And how do we store data in our day-to-day imperative programming? In variables, as values.
+# slide
+In our every day code, we rarely think of *time* as a factor in our code. Although it makes a lot of sense to think in terms of time for asynchronous programming. Let's say if we do consider time in our code, we'll call it *temporal* programming.
+# slide
+Now it's same as imperative programming, I just made a term.
+What would be equivalent of a /value/ in temporal programming? Something which don't have a value yet, but it might have it in future. A promise.
+# slide
+But we don't really deal data as *values* primarily, we deal with collections of data. Arrays mostly, or as we can call them generically, Iterables.
+# slide
+Now what is equivalent of an Iterable in temporal programming? Array of Promises is the wrong answer. It has to be an asynchronous collection, which don't have all the values yet, which will get *values* over time in future, and it may or may not finish. That's what an Observable is.
+Observables in RxJS aim to mimic the interface of Array extras.
+# slide
+So if you know how to use Array extras, the map/reduce/filter, you already know how to use an Observable.
+Observable are pretty different from Arrays though. For instance, you can't go back in an Observable. You can only get values from future. There are ways to keep old values though, but that's different.
+Observables have more in common with Promises. I think of Observable as a Promise which can resolve more than once, and can tell when it is done. Observable are in my opinion, natural evolution of Promises.
+# slide
+So if Promise is Bulbasore, Observable is,
+# slide
+well,
+# slide
+evolved Bulbasore.
+# slide
+Enough about the manipulation of Observable with array-extra like interface, how do we actually put Observable to use. I mean if it's evolution of Promise, and it is asynchronous, it would have success/fail callbacks, right? It does have it.
+resolve/reject and then/error of promises are called `onNext` and `onError` in Observable. And Observable is a collection, so it has to complete at some point. For that it has `onCompleted` callback too.
+These three callbacks can be put as a single unit,
+# slide
+called a `Observer`.
+# slide
+I didn't talk about Observer till now, but it is important. Observer and Observable together makes the building blocks of all of RxJS.
+Now how Observer is important and why I didn't talk about it till now. Turns out, you don't need to create an Observer in most cases, you can just pass 1, 2 or 3 functions to an Observable's subscribe method, and RxJS will implicitly create an observer for you.
+How Observer are important.
+# slide
+Observable are lazy. This code will not execute even when users_ Observable is supposed to get a value from a hot source.
+# slide
+#+begin_src javascript
+let users_ = getUsersObservable();
+
+let notJohnConners_ =
+  users_
+    .map(user => user.fullName)
+    .map(name => name.first + ' ' + name.last)
+    .filter(x => x === 'John Connor');
+#+end_src
+I used the term loosely. Observable are lazy in that they don't execute the chain of operators, until there is an Observer subscribed to them. So this code will execute, only after we subscribe to it. This is a quite useful feature actually.
+#+begin_src javascript
+notJohnConners_.subscribe(
+ (user) => console.log('New user arrived: ', user),
+ (error) => console.log('Error Occured', error),
+ () => console.log('All Done')
+)
+#+end_src
+So in this example, `users_` is the Observable, `subscribe` will attach an Observer to it, what are map and filter? They are called Operators.
+# slide
+Operators allow doing different operations on Observables, to transform, merge, and coordinate Observable streams in whatever way you like. There's a large number of operators available.
+# slide
+Plenty of them.
+# slide
+For everything you need. These are not all, there are more.
+# slide
+You can convert almost anything to an Observable. For example from
+# slide
+- Variables or arrays
+- or Promises. Promises actually have great support in RxJS. Most of the time, you don't need to convert a promise, you can just use them in place of Observable. RxJS do the conversion implicitly.
+- Even events. This is a great feature for cleaning up your UI code, we'll see why it's so great later.
+- We can even convert the functions which take callbacks to return Observable.
+- ES6 generators have great support in RxJS. You can convert a generator to Observable, or use it directly as a Promise.
+# slide
+I said we can convert events to Observable. But event listeners are may be the most common source of memory leaks. How do we tell an Observable to stop listening to an event?
+When we subscribe to an Observable, it creates a *disposable* object, on which we can call *.dispose* method, to tell it to release all the clean-up it need. But what is even better, you don't need to explicitly call `dispose` in many cases. You can declaratively do the cleanup, get rid of event-listeners etc. Let's see an example how.
+# slide
+#+begin_src javascript
+var clicks_ = Rx.Observable.fromEvent(countBtn, 'click'),
+    counter_ = Rx.Observable.from([1,2,3,4,5,6,7,8,9,10]);
+
+var disposeable = clicks_
+    .zip(
+        counter_,
+        function(e, count) { return count; }
+    )
+    .take(5)
+    .subscribe(function(x) {countNode.innerHTML = x;});
+#+end_src
+Here I converted 'click' event on count button to observable, and I zipped it with another simple Observable so I get a number on every click. Not the `take` operator, it says that take exactly and only 5 values form this Observable; after that this Observable is not required.
+It is not required so it gets rid of it, and clean-up all the event-listeners it set up for it.
+# slide
+Let's check it out.
+Second thing I wanted to show is the co-ordination of Observable. The `counter_` in this case will get all its values immediately. Like you create it from array, and it gets all its values right then. But, clicks_ will get a value only when user do a click, God knows when he'll do it. RxJS handles all the co-ordination required between two asynchronous sources, and provides us the expected behavior at no expense of code readability or elegance.
+# slide
+RxJS has pretty good performance. They make a lot of efforts to keep footprint of the Observable object as small as possible. Another thing that help in performance, and give you more control over your asynchronous code is the swappable concurrency. Now Javascript is not concurrent, but we can chose how to put our async callbacks; on setImmediate, or on requestAnimationFrame for smooth animations, or we can even write our own *scheduler*. We won't talk about them today. Oh wait, we just did. Eh, whatever. Rx makes smart decisions to provide fastest way to execute the code.
+# slide
+Unlike arrays, Observable don't create intermediate sequences.
+# slide
+For each map/filter operation on an Array, a new array is created which than need to be discarded immediately. No such thing for Observable, so, yay, less work for garbage collector.
+# slide
+To make things better, RxJS support transducers, so we can even save ourselves from creating intermediate Observable.
+# slide
+And it plays very well with existing libraries you might be using. We can use Jquery or zepto events and promises etc.
+# slide
+There are framework bindings available for most frameworks. So you can start converting your existing apps without much hassle.
+# slide
+Oh, and it's from Microsoft. So it has support up to IE6.
+# slide
+* Examples
+Time for some examples I guess. We are short on time, so let's just quickly walk through them.
+*Todo* Examples
+
+* Conclusion
+# slide
+I noticed some happy things happening in my code when I started using RxJS more in my hoby projects.
+# slide
+I usually start my projects as a monilith, that do a very simpler version of the product. Then when I am implementing more things, I start modularising it as I see fit. While writing code the FRP way, I found modularising the code was so much more easier. Code was already modular. Converting the monolith was mostly a matter of moving the Observables to right places, clean up the API and done.
+# slide
+You saw in the mouse-follow example, we converted mouse-move to left and top observables. Now if we have to add another "eyes" widget to our app, that'll be looking at the mouse all the time, we can simply reuse those two Observable. Not that we can't do it with imperative code, but Observables make them so much more obvious, I'd say it encourage reuseability.
+# slide
+And of course the code is easy to read. That is a huge plus for someone like me who follow up the hobby projects at weeks distance sometime.
+# slide
+And I got all this by default. I said these were the happy side-effects I noticed in my code when I started using RxJS.
+# slide
+I guess we can conclude that writing FRP inspired code with RxJS or any other library that suits your taste bring us following benefits.
+- It help us write composable, simple code, which is easy to test
+- and easy to read
+- It is mostly stateless and composed of purer functions, so it is much more maintainable
+- I didn't talk about error handling in RxJS, but it is another one of its killer features. In my opinion, error handling is what gives Rx an upper hand over CSP based systems.
+
+In 4 words, *elegent* *declarative* *code*.
+# slide
+Elegent declarative *asynchronous* code.
+Well, it's called asynchronous for a reason.
+
+
+Thank you everyone.
