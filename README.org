@@ -4,14 +4,16 @@ This is a reveal.js presentation. I created the presentation at slides.com, and 
 What follows below is the transcript of the presentation.
 
 * Intro
-For new few minutes we'll discuss Functional Reactive Programming inspired development in Javascript. We'll discus how FRP can help us write asynchronous code much more declaratively, how it improves the quality of our code in general etc. We won't talk about the "reactive" aspect that much, to keep things simpler and to keep the lime-light on code-quality and asynchronous aspects of code.
+For next few minutes we'll discuss Functional Reactive Programming inspired development in Javascript. We'll discus how FRP can help us write asynchronous code much more declaratively, how it improves the quality of our code in general etc.
+
 But before we start digging into FRP, I wanna say few words of in loving memory of my friend Coyote.
+# slide
 * A story of Coyote
 Coyote was a software developer,
 # slide
 always chasing javascript like all of us. He never could though, like most of us.
 # slide
-One day, he was a given a very simple task. To "Render tweets to a web page". "Can't be a task simpler than this", he said. To start with the solution, he made a small assumption. He assumed that he has an array of 100 or so tweets, and a tweet looks like this:
+One day, he was a given a task. To "Render tweets to a web page". "Can't be a task simpler than this", he said. To start with the solution, he assumed that he has an array of 100 or so tweets, and a tweet looks like this:
 # slide
 #+begin_src javascript
 var tweets = [{
@@ -24,15 +26,15 @@ var tweets = [{
 .
 (100 or so)];
 #+end_src
-Quite fare assumption
+Fare assumption I think.
 # slide
-Being an awesome developer, Coyote has drafted out his specs very clearly. According to him, his sub-tasts are:
+Being an awesome developer, Coyote has drafted out his specs very clearly. His sub-tasks are:
 # slide
 - only show the tweets from the logged-in user
 # slide
 - only show the tweets with a specific hash-tag
 # slide
-- and replace the text emogies with image emogies. Emogies are those little smilies kids put all over their texts.
+- and replace the text emogies with images. Emogies are those little smilies kids put all over their texts.
 # slide
 
 So he start with the code, one problem at a time
@@ -43,7 +45,7 @@ tweets
     .filter(t => t.username === me.username)
 #+end_src
 - He gets his tweets from the source, and for his first task he uses filter. Filter is a nice "Array extra" method on ES5 arrays, which takes a function, run it on each item of the array, and create a new array with those items for which the given function returns true.
-  Note here we're using ES6 fat-arrow syntax. It's same thing as creating an anonymous function; when we don't use braces, it returns the single statement that we pass it.
+  Note here we're using ES6 fat-arrow syntax. It's same thing as creating an anonymous function; when we don't use braces, it returns the single statement.
   so
   #+begin_src javascript
   x => x * 2;
@@ -64,13 +66,13 @@ tweets
         return t;
     })
   #+end_src
-  Map is similar to filter in that it takes a function, apply that function to each item of the array, and returns a new array of the processed values.
+  Map is similar to filter in that it takes a function, it apply that function to each item of the array, and returns a new array of the processed values.
 - For the last nail in the coffin, he uses `forEach` to traverse each item in his processed collection of tweets, and render each tweet.
   #+begin_src javascript
   .forEach(t => render);
   #+end_src
-
-Coyote is too proud now, and rightfully so. His code looks fabulous.
+# slide
+Coyote is too proud now, and rightfully so. His code looks good.
 #+begin_src javascript
 tweets
   .filter(t => t.username === me.username)
@@ -92,30 +94,30 @@ And best of all, his code is not mutating the source data. In map, he manipulate
 The system Coyote has built works somewhat like this.
 #+CAPTION: Pure function model
 [[http://i.imgur.com/1wMthve.png]]
-The data source is made to go through an operation, and the result is passed to a sink for side-effects or storage. The Operations in this case is special that it won't mutate the source, and it doesn't depend on any external state. Given same input, it will always produce same output. In other words it is a pure function. Beauty of pure functions is that they can be composed to make complex operations without any hassle. Notice each operation Coyote used is a pure function.
+The data source is made to go through an operation, and the result is passed to a sink for side-effects. The Operations in this case is special that it won't mutate the source, and it doesn't depend on any external state. Given same input, it will always produce same output. In other words it is a pure function. Beauty of pure functions is that they can be composed to make complex operations without any hassle. Each operation Coyote used is a pure function.
 # slide
 This functional approach bring a lot of value to the code.
 # slide
-First very important thing it do is that it make the code very readable. Just laying your eyes on the code explains everything it is doing. Reason being, you can absorb it in chunks. No two operations depend on each other, there's no state to keep in mind.
+First very important thing it do is that it make the code very readable. Just laying your eyes on the code explains everything it is doing. You can absorb it in chunks. There's no state to keep in mind.
 # slide
 Lesser cognitive load means more maintainable code. You won't be afraid to touch this code in future if you need to. There is lot less chance of breaking something with changing one part of your code.
 # slide
 Pure functions are super easy to test. The easiest to test I would say.
 # slide
-Modular compos-able code means more ease of extension. Want to introduce new behavior? Just drop in new operation. For example, Coyote's code render each tweet one at a time. A better approach would be to combine all the tweets and render them all at once. Doing that is just a matter of introducing a `reduce` before render `forEach`.
+Modular compos-able code means ease of extension. Want to introduce new behavior? Just drop in new operation. For example, Coyote's code render each tweet one at a time. A better approach would be to combine all the tweets and render them all at once. Doing that is just a matter of introducing a `reduce` before render `forEach`.
 # slide
 Using purer functions this way encourage reusability. For example the `hasTag` and `emogize` in Coyote's case. Doing things the functional way induces DRY code.
 
 But, this is Javascript.
 # slide
-The reality bumps in and it is not pretty. Turns out the source is asynchronous, and it produces one tweet at a time. Coyote's heart sunk when his project manager shows up with the eventual *surprise*.
+The reality bumps in and it is not pretty. Turns out the source is asynchronous, it produces one tweet at a time. Coyote's heart sunk when his project manager shows up with the eventual *surprise*.
 Asynchronous code in Javascript. Hmmm. Sounds familiar? I wonder what options Coyote had.
 # slide
 First thing that came in his mind was *callbacks*. Now callbacks are cute.
 # slide
 So cute /cringe/
 # slide
-Here, little eye bleach if your eyes are bleeding already.
+Here, eye bleach if your eyes are bleeding already.
 # slide
 - Problems with callbacks are real though. First thing that come to mind is composability. How would he compose callbacks? Remember how Coyote used small operations to accomplish the greater good? Good luck doing that with callbacks.
 - Dangling state can be nasty, very nasty with callbacks. Imagine yourself 6 level deep in callbacks. 5th callback uses something set by 2nd callback. Now debug.
@@ -125,15 +127,15 @@ Here, little eye bleach if your eyes are bleeding already.
 Or he can use Promise.
 # slide
 The slayer of callbacks and savior of peasants.
-Now promises are awesome. Callbacks treated async as bastard child of Javascript for ages, thanks to promises async values can be passed around like regular data.
+Now promises are awesome. Callbacks treated async data as bastard child of Javascript for ages, thanks to promises async values can be passed around like regular data.
 But Promises are not free of all evil. For one, they are hard to compose. They resolve once at most and then be done with it, and canceling a promise in a pool of asynchronous requests is not the something you'd do on a sunny weekend.
-What Coyote had in mind was something that would provide brevity of functional programming along with all the awesomeness we saw with the synchronous version.
+What Coyote wanted was something that would provide brevity of functional programming along with all the awesomeness we saw with the synchronous version.
 # slide
 So may be it's time to make a compromise?
 # slide
 Coyote lived a life of no compromise. He won't compromise, not even in face of callbacks.
 Frustrated by his helplessness, Coyote stood straight and jumped out of his window, on 10th floor.
-Right before the wall, windows reminded Coyote another awesome product from his favorite awesome company which always gave him awful products.
+Right before the fall, windows reminded Coyote of another awesome product from his favorite company, which always gave him awful products.
 # slide
 No not Acme.
 # slide
@@ -145,7 +147,7 @@ RxJS brings C#'s reactive extensions to Javascript, and quite beautifully too.
 # slide
 Great thing is, Rx has alternatives for many different programming languages. Learn once implement everywhere is the trend, right?
 
-But it was too late for Coyote. Poor Coyote. He was a nice...umm...guy?
+But it was too late for Coyote. Poor Coyote.
 
 Never mind. It's not late for us though. Let's use RxJS to fulfill Coyote's falling wish.
 # slide
@@ -164,15 +166,15 @@ tweets_
   .subsribe(x => render(x));
 #+end_src
 
-Umm...shit. Have I copied the same synchronous code here as well? I think I made a mistake.
-What if I haven't? What if Observable is a magical unicorn that allow you to use map/filter and other Array extras on asynchronous values?
+Umm...shit. Have I copied the same synchronous code here? I think I've made a mistake.
+What if I haven't though? What if that Observable is a magical unicorn that allow you to use Array extras on asynchronous values?
 haha...day dreams.
 # slide
 Let's take a look at the code again. Here's the synchronous version, when we had an array.
 # slide
 And the code which might be true.
 
-Turns out, it is no mistake. It is 100% working code. Observable *is* the unicorn that could have saved Coyote another painful fall.
+Turns out, it is no mistake. It is valid code. Observable *is* the unicorn that could have saved Coyote another painful fall.
 
 # slide
 * Observable
@@ -184,30 +186,29 @@ They are the building blocks of FRP inspired programming using RxJS. Almost ever
 # slide
 They are first class async values, like a promise is.
 # slide
-Plus, they have a large number of functional operators that allow composing operations the same way as we did with arrays.
+Plus, they have a large number of operators that allow composing operations the same way as we did with arrays.
 # slide
 And they play well with other form of data that you might have. We'll see how later.
 Before we dive into Observables, let me answer first why you should care. I mean of course Observables are awesome and you should be using them, but so are pure functions, but how many really care?
 # slide
-- Observables are proposed to be made first-class citizens in ES7. I have my fingers crossed till the day I heard it. It'll be so much awesome to code in Javascript when this happens.
-- Angular 2 gets away from its infamous digest loop by using Observables for change detection. So yea, you can expect first class support for them in Angular 2.
+- Observables are proposed to be made first-class citizens in ES7. Promises are native in ES6, and Observables, hopefully will be in ES7.
+- Angular 2 gets away from its infamous digest loop by using Observables for change detection. So yea, first class support for them in Angular 2.
 - And the new hot thing (react) has plans to support Observables first class. Or so I've heard.
 # slide
 Alright then, let's address the elephant in the room. Or was it unicorn? Elephant sized unicorn perhaps.
 You can think of an Observable, as an array spanned over time. It gets its values in future, and may or may not finish.
-Let's see a comparison with usual Javascript stuff and Observables.
 # slide
-Programming for a large part is about manipulation of data. And how do we store data in our day-to-day imperative programming? In variables, as values.
+Programming for a large part is about manipulation of data. And how do we represent data in our day-to-day imperative programming? In variables, as values.
 # slide
-In our every day code, we rarely think of *time* as a factor in our code. Although it makes a lot of sense to think in terms of time for asynchronous programming. Let's say if we do consider time in our code, we'll call it *temporal* programming.
+However, we rarely think of *time* as a factor in our code. Although it makes a lot of sense to think in terms of time for asynchronous programming. Let's say if we do consider time in our code, we'll call it *temporal* programming.
 # slide
 Now it's same as imperative programming, I just made a term.
 What would be equivalent of a /value/ in temporal programming? Something which don't have a value yet, but it might have it in future. A promise.
 # slide
-But we don't really deal data as *values* primarily, we deal with collections of data. Arrays mostly, or as we can call them generically, Iterables.
+But value and promise are singular representations of data. What's the plural of a value? An iterable, arrays in ES5. That's how we treat our data mostly, in collections, not in single values. 
 # slide
-Now what is equivalent of an Iterable in temporal programming? Array of Promises is the wrong answer. It has to be an asynchronous collection, which don't have all the values yet, which will get *values* over time in future, and it may or may not finish. That's what an Observable is.
-Observables in RxJS aim to mimic the interface of Array extras.
+Now what is equivalent of an Iterable in temporal programming? Array of Promises is the wrong answer. It has to be an asynchronous collection, which don't have all the values yet, which will get *values* over time in future. Plural of Promise, is an Observable.
+Observable in RxJS aim to mimic the interface of Array extras.
 # slide
 So if you know how to use Array extras, the map/reduce/filter, you already know how to use an Observable.
 Observable are pretty different from Arrays though. For instance, you can't go back in an Observable. You can only get values from future. There are ways to keep old values though, but that's different.
