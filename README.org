@@ -1,6 +1,9 @@
 * Functional Reactive Programming with RxJS
 This is a reveal.js presentation. I created the presentation at slides.com, and then imported it to reveal.js for inserting my example scripts inside the presentation (slides.com won't allow that). To check it out locally, just open the index.html file.
 
+#+ATTR_HTML: title="Youtube video"
+[[https://www.youtube.com/watch?v=SFPF56BB1Cs][file:http://img.youtube.com/vi/SFPF56BB1Cs/0.jpg]]
+
 What follows below is the transcript of the presentation.
 
 * Intro
